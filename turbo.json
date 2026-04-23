@@ -16,8 +16,9 @@
       ]
     },
     "lint": {
+      "dependsOn": ["^build"],
       "outputs": [],
-      "inputs": ["src/**", "**/*.{ts,tsx,js,jsx}", ".eslintrc.*", "eslint.config.*", "package.json"]
+      "inputs": ["src/**", "test/**", ".eslintrc.*", "eslint.config.*", "package.json"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
