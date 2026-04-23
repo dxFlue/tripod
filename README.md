@@ -7,10 +7,13 @@ npm scope：`@tripod-stack/*` + `eslint-plugin-tripod`（unscoped）
 
 ## 快速了解
 
-- **计划文档**（权威）：
-  - [`plans/tripod-core.md`](./plans/tripod-core.md) — AI 日常加载（硬规则 + 快速索引）
-  - [`plans/mobile-react-19-x-mobile-encapsulated-quokka.md`](./plans/mobile-react-19-x-mobile-encapsulated-quokka.md) — 详细设计档案
-- **目录结构**：见 `plans/tripod-core.md` §12。
+- **设计文档**（权威）：
+  - [`plans/design/tripod-core.md`](./plans/design/tripod-core.md) — AI 日常加载（硬规则 + 快速索引）
+  - [`plans/design/mobile-react-19-x-mobile-encapsulated-quokka.md`](./plans/design/mobile-react-19-x-mobile-encapsulated-quokka.md) — 详细设计档案
+- **执行跟踪**：
+  - [`plans/execution/tasks.md`](./plans/execution/tasks.md) — 任务清单 + 阶段进度
+  - [`plans/execution/completion-log.md`](./plans/execution/completion-log.md) — 阶段完成日志（commit / 测试数 / 产出）
+- **目录结构**：见 `plans/design/tripod-core.md` §12。
 
 ## 前置要求
 

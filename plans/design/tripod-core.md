@@ -1,7 +1,7 @@
 # Tripod Core（AI 首加载文件）
 
 > **本文件是 AI 日常加载入口**。约 500 行，集中 AI 做任何动作前必须知道的契约。
-> 详细设计 / 接口代码 / 决策论证见 `plans/mobile-react-19-x-mobile-encapsulated-quokka.md`（下称 **plan-full**）。
+> 详细设计 / 接口代码 / 决策论证见 `plans/design/mobile-react-19-x-mobile-encapsulated-quokka.md`（下称 **plan-full**）。
 > 文档优先级：`tripod.manifest.yaml`（机器可读 SoT） > 本文件 > plan-full > 人类注释。
 
 ---

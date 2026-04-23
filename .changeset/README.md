@@ -32,4 +32,4 @@ pnpm changeset:publish
 git push --follow-tags
 ```
 
-具体见 `plans/mobile-react-19-x-mobile-encapsulated-quokka.md` §Changesets。
+具体见 `plans/design/mobile-react-19-x-mobile-encapsulated-quokka.md` §Changesets。

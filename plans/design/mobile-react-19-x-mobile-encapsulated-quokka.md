@@ -1,6 +1,6 @@
 # 全栈代码模板体系（Web + Mobile + Server）— 详细设计档案
 
-> **⚠️ AI 日常会话请首先加载 `plans/tripod-core.md`**（约 380 行），本文件是详细设计档案 / 论证与示例，AI 只在 core 不足以回答时按主题 grep 本文件。
+> **⚠️ AI 日常会话请首先加载 `plans/design/tripod-core.md`**（约 380 行），本文件是详细设计档案 / 论证与示例，AI 只在 core 不足以回答时按主题 grep 本文件。
 >
 > 本文件内容与 core 有重合但更详细。矛盾时以本文件 + 代码为准。core 见 [tripod-core.md](./tripod-core.md)。
 
