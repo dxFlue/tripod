@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+# Turbo 的 --filter=...[origin/main] 需要 origin/main 存在。
+# 首次 push（远端空仓或分支首推）时 origin/main 还不存在，走全量分支。
+# 增量 push 走 filter 加速。
+
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  FILTER="--filter=...[origin/main]"
+  MODE="增量（相对 origin/main 的改动包）"
+else
+  FILTER=""
+  MODE="全量（origin/main 尚不存在）"
+fi
+
+echo "🔍 pre-push 校验：$MODE"
+
+pnpm exec turbo run lint typecheck test build $FILTER || {
+  echo ""
+  echo "❌ pre-push 校验失败。修复后重新 push。"
+  echo "   绕过仅限应急（--no-verify），会污染远端。"
+  exit 1
+}

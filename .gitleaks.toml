@@ -1,0 +1,28 @@
+title = "Tripod gitleaks config"
+
+# 继承官方默认规则集（覆盖 200+ 常见凭据模式）
+[extend]
+useDefault = true
+
+# allowlist：不认为是密钥的路径 / 字符串
+[allowlist]
+description = "Tripod allowlist — 文档、示例、插件描述文本"
+paths = [
+  # 设计文档里大量出现 "密码 / token / secret" 的自然语言说明
+  '''plans/.+\.md''',
+  '''docs/.+\.md''',
+  '''.*README\.md$''',
+  # env 模板（只有 key，无值）
+  '''infra/deploy/\.env.*\.example$''',
+  '''.env\.example$''',
+  # Changeset 文件（发版描述，可能提及功能名含"token"字样）
+  '''\.changeset/.+\.md$''',
+  # 生成的 pnpm lock / package-lock 可能误触
+  '''pnpm-lock\.yaml$''',
+]
+
+# 真值文件模式；如果 match 到这里，直接触发而不是 allowlist
+# （gitleaks 默认已识别 .env，但业务里可能有别名）
+regexes = [
+  # 空 — 用 default 规则就够
+]

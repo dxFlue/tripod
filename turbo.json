@@ -1,0 +1,54 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["tsconfig.json", ".env", ".env.local", "packages/tsconfig-tripod/**"],
+  "globalEnv": ["NODE_ENV", "CI", "TURBO_*"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"],
+      "inputs": [
+        "src/**",
+        "tsconfig*.json",
+        "package.json",
+        "vite.config.*",
+        "next.config.*",
+        "nest-cli.json"
+      ]
+    },
+    "lint": {
+      "outputs": [],
+      "inputs": ["src/**", "**/*.{ts,tsx,js,jsx}", ".eslintrc.*", "eslint.config.*", "package.json"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "inputs": ["src/**", "tsconfig*.json", "package.json"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "**/*.{test,spec}.{ts,tsx,js,jsx}",
+        "vitest.config.*",
+        "jest.config.*",
+        "playwright.config.*"
+      ]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "inputs": ["e2e/**", "**/*.e2e.{ts,tsx}", "playwright.config.*"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    }
+  },
+  "ui": "tui"
+}

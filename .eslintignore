@@ -1,0 +1,24 @@
+# eslint 自己 + prettier + tsconfig 的 "config 包" 不走 eslint
+packages/eslint-config-tripod/
+packages/eslint-plugin-tripod/
+packages/prettier-config-tripod/
+packages/tsconfig-tripod/
+
+# 构建产物
+**/dist/
+**/build/
+**/.next/
+**/.turbo/
+**/coverage/
+
+# 依赖
+**/node_modules/
+
+# 生成物
+**/*.d.ts
+**/*.d.cts
+
+# 包构建配置（不走业务 lint；项目 tsconfig 不 include）
+**/tsup.config.ts
+**/vitest.config.ts
+**/.eslintrc.cjs

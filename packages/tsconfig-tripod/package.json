@@ -1,0 +1,17 @@
+{
+  "name": "@tripod-stack/tsconfig",
+  "version": "0.0.0",
+  "description": "Tripod TypeScript 基础配置（base / react / next / nest / rn）",
+  "license": "MIT",
+  "files": [
+    "base.json",
+    "react.json",
+    "next.json",
+    "nest.json",
+    "rn.json",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

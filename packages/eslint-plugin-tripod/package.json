@@ -1,0 +1,19 @@
+{
+  "name": "eslint-plugin-tripod",
+  "version": "0.0.0",
+  "description": "Tripod 自定义 ESLint 规则（no-direct-prisma-client / no-default-export / no-barrel-import / error-code-required / require-permission-decorator / require-idempotent-decorator）",
+  "license": "MIT",
+  "main": "index.js",
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "rules/",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

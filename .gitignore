@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.expo/
+.turbo/
+*.tsbuildinfo
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Caches
+.cache/
+.eslintcache
+.stylelintcache
+
+# Env files (真值永远不入库)
+.env
+.env.local
+.env.*.local
+
+# Secrets (整个目录永不入库，只有 secrets/README.md 入库)
+secrets/*
+!secrets/README.md
+
+# Release artifacts
+releases/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# Prisma generated
+prisma/generated/

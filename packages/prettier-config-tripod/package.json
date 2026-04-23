@@ -1,0 +1,21 @@
+{
+  "name": "@tripod-stack/prettier-config",
+  "version": "0.0.0",
+  "description": "Tripod Prettier 共享配置",
+  "license": "MIT",
+  "main": "index.js",
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "prettier": "^3.0.0"
+  },
+  "dependencies": {
+    "prettier-plugin-tailwindcss": "^0.6.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

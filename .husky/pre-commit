@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+# ===== Step 1：gitleaks 扫暂存区密钥 =====
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner || {
+    echo ""
+    echo "❌ gitleaks 检出潜在密钥。请移除后重新 commit。"
+    echo "   白名单真需加到 .gitleaks.toml 的 [allowlist]。"
+    exit 1
+  }
+else
+  echo "⚠️  gitleaks 未安装 — 跳过密钥扫描（强烈建议装：brew install gitleaks）"
+  echo "   安装指引见 docs/dev-setup.md"
+fi
+
+# ===== Step 2：lint-staged（prettier + eslint --fix） =====
+pnpm exec lint-staged

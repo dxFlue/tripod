@@ -1,0 +1,112 @@
+name: tripod-dev
+
+# Tripod 开发栈。用 profile 分档：
+#   pnpm dev                  → profile=minimal (pg + redis)
+#   pnpm dev --profile=full   → profile=full    (+ mailhog + minio + glitchtip)
+#
+# 生产栈见 infra/compose/docker-compose.prod.yml（阶段 7 补）。
+
+services:
+  # ===== minimal profile（默认） =====
+  postgres:
+    image: postgres:17-alpine
+    profiles: ['minimal', 'full']
+    environment:
+      POSTGRES_USER: tripod
+      POSTGRES_PASSWORD: tripod
+      POSTGRES_DB: tripod_dev
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../db-scripts/init-dev.sql:/docker-entrypoint-initdb.d/00-init-dev.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tripod -d tripod_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine
+    profiles: ['minimal', 'full']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # ===== full profile 追加 =====
+  mailhog:
+    image: mailhog/mailhog:latest
+    profiles: ['full']
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # Web UI
+
+  minio:
+    image: minio/minio:latest
+    profiles: ['full']
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: tripod
+      MINIO_ROOT_PASSWORD: tripod-dev-password
+    ports:
+      - '9000:9000' # S3 API
+      - '9001:9001' # Web Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:latest
+    profiles: ['full']
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://tripod:tripod@postgres:5432/glitchtip_dev
+      SECRET_KEY: dev-only-change-me-in-production
+      PORT: '8000'
+      EMAIL_URL: smtp://mailhog:1025
+      DEFAULT_FROM_EMAIL: noreply@tripod.local
+      REDIS_URL: redis://redis:6379/1
+      ENABLE_ORGANIZATION_CREATION: 'true'
+    ports:
+      - '8088:8000'
+    restart: unless-stopped
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:latest
+    profiles: ['full']
+    command: ./bin/run-celery-with-beat.sh
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://tripod:tripod@postgres:5432/glitchtip_dev
+      SECRET_KEY: dev-only-change-me-in-production
+      EMAIL_URL: smtp://mailhog:1025
+      DEFAULT_FROM_EMAIL: noreply@tripod.local
+      REDIS_URL: redis://redis:6379/1
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
