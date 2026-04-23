@@ -1,0 +1,10 @@
+{
+  "extends": "@tripod-stack/tsconfig/nest.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["node", "reflect-metadata"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test"]
+}
