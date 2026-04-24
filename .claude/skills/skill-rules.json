@@ -305,6 +305,210 @@
           "(mobile|Expo|EAS|admin-mobile|mall-mobile).*?(启动|跑|发版|build|submit|update)"
         ]
       }
+    },
+    "shared-package-author": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "新建 shared-",
+          "加 shared-auth",
+          "加 shared-permission",
+          "加 shared-workflow",
+          "加 shared-storage",
+          "加 shared-notification",
+          "加 shared-realtime",
+          "加 shared-audit",
+          "加 shared-i18n",
+          "加 shared-export",
+          "加 shared-feature-flag",
+          "加 shared-analytics",
+          "加 shared-deeplink",
+          "加 shared-test",
+          "加 shared-web-ui",
+          "加 shared-mobile-ui",
+          "加 shared-theme",
+          "加 shared-payment",
+          "加 shared-cart",
+          "加 shared-promotion",
+          "加 shared-shipping",
+          "业务基建包",
+          "shared 基建层",
+          "新建业务基建包",
+          "新建基础层包",
+          "加 shared 包",
+          "新 shared 包",
+          "shared-* 包",
+          "packages/shared"
+        ],
+        "intentPatterns": [
+          "(新建|加|新增|做|写).*?(shared-[a-z]+|业务基建包|shared 基建层|shared 包)",
+          "(加|新建).*?包.*?(packages?/shared|shared-\\*)",
+          "(新建|加).*?(packages?/shared-[a-z]+)"
+        ]
+      }
+    },
+    "validation-runner": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "跑一遍验证",
+          "全绿一下",
+          "发版前检查",
+          "验证一下",
+          "turbo 跑一下",
+          "跑一下 turbo",
+          "跑 typecheck",
+          "跑 test",
+          "跑 lint",
+          "跑 build",
+          "跑验证",
+          "所有包都过一下",
+          "全包验证",
+          "过一遍",
+          "全量跑",
+          "改动影响包跑",
+          "typecheck + test + lint + build"
+        ],
+        "intentPatterns": [
+          "(跑|运行|执行|做).*?(验证|verify|turbo|typecheck|全绿|lint|test|build)",
+          "(全|所有包).*?(过|绿|通过|一下|跑一下)",
+          "(改动|影响).*?(包|跑|过|跑一下)",
+          "(发版|release).*?(前|检查|smoke|验证)"
+        ]
+      }
+    },
+    "prisma-tenancy-author": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "加一张表",
+          "加一张 xxx 表",
+          "加 Prisma model",
+          "加 Prisma 表",
+          "加 schema",
+          "改 schema",
+          "新增实体",
+          "加表",
+          "加多租户表",
+          "加 model",
+          "加 prisma",
+          "Prisma 表",
+          "schema.prisma",
+          "新增模型",
+          "加数据表",
+          "建表"
+        ],
+        "intentPatterns": [
+          "(加|新增|新建|做|写).*?(张|个)?.*?(表|model|schema|实体|Prisma)",
+          "(改|修改|更新).*?schema(\\.prisma)?",
+          "(新增|加|做).*?(多租户|RLS|tenantId).*?(表|model)",
+          "(schema|prisma).*?(加|新增|扩|新)"
+        ]
+      }
+    },
+    "commit-and-release": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "commit",
+          "提交",
+          "写 changeset",
+          "加 changeset",
+          "发版",
+          "release",
+          "打 tag",
+          "升版号",
+          "要 push 了",
+          "改动怎么提交",
+          "发 0.1.0",
+          "发 1.0",
+          "升版本",
+          "npm 发",
+          "推送到 npm",
+          "changeset",
+          "commit 规范",
+          "commit message",
+          "写 commit",
+          "提 commit",
+          "发布版本",
+          "npm publish"
+        ],
+        "intentPatterns": [
+          "(怎么|如何).*?(commit|提交|发版|release|打 tag|升版号)",
+          "(写|新增|加|生成).*?changeset",
+          "(推|发).*?(npm|版|release)",
+          "(发版|release).*?(前|流程|步骤)",
+          "(commit|提交).*?(message|规范|格式|怎么写)"
+        ]
+      }
+    },
+    "nest-module-author": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "加 user module",
+          "加 order module",
+          "写 NestJS controller",
+          "加 API endpoint",
+          "加 endpoint",
+          "实现 xxx service",
+          "加 controller",
+          "新 module",
+          "加 module",
+          "加 NestJS module",
+          "NestJS module",
+          "加 service",
+          "写 service",
+          "新增 module",
+          "apps/server 加",
+          "后端 module",
+          "server module",
+          "写 guard",
+          "加 guard"
+        ],
+        "intentPatterns": [
+          "(加|写|实现|新建|新增).*?(NestJS\\s*)?(module|controller|service|endpoint|guard)",
+          "(apps?/server).*?(module|controller|新增|加|写)",
+          "(加|写).*?(接口|API).*?(endpoint|路由|route)",
+          "(新|加).*?(业务模块|module)"
+        ]
+      }
+    },
+    "react-component-author": {
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "加页面",
+          "加组件",
+          "写 React 组件",
+          "写 React",
+          "加 AntD 表",
+          "加 AntD Form",
+          "加 Form",
+          "加 Table",
+          "写 Dashboard",
+          "加 Dashboard",
+          "新增路由",
+          "加菜单项",
+          "加页",
+          "写页",
+          "前端页面",
+          "加 tsx",
+          "加 React 页面",
+          "admin-web 加",
+          "platform 加",
+          "portal 加",
+          "mall-web 加",
+          "新组件",
+          "加 hook"
+        ],
+        "intentPatterns": [
+          "(加|写|新建|新增).*?(页|组件|component|page|form|table|dashboard|菜单)",
+          "(apps?/admin-web|apps?/platform|apps?/portal|apps?/mall-web).*?(src|页|组件|component|page)",
+          "(React|tsx|jsx).*?(页面|组件|component|加|写)",
+          "(新增|加|写).*?(路由|route|菜单|nav|sidebar)"
+        ]
+      }
     }
   }
 }

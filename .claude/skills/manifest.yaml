@@ -55,3 +55,57 @@ skills:
     lastReviewedAt: 2026-04-23
     lastActivatedAt: null
     deprecatedAt: null
+
+  shared-package-author:
+    namespace: template
+    category: shared
+    version: 0.1.0
+    addedAt: 2026-04-23
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  validation-runner:
+    namespace: template
+    category: global
+    version: 0.1.0
+    addedAt: 2026-04-24
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  prisma-tenancy-author:
+    namespace: template
+    category: server
+    version: 0.1.0
+    addedAt: 2026-04-24
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  commit-and-release:
+    namespace: template
+    category: global
+    version: 0.1.0
+    addedAt: 2026-04-24
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  nest-module-author:
+    namespace: template
+    category: server
+    version: 0.1.0
+    addedAt: 2026-04-24
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  react-component-author:
+    namespace: template
+    category: web
+    version: 0.1.0
+    addedAt: 2026-04-24
+    lastReviewedAt: 2026-04-24
+    lastActivatedAt: null
+    deprecatedAt: null
