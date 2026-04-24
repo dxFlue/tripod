@@ -1,0 +1,57 @@
+version: 1.0
+description: |
+  Tripod skill 注册表 + 时间戳真相源 + namespace 唯一 source of truth。
+  Claude Code 不递归扫描 .claude/skills/，所有 skill 必须扁平在 .claude/skills/<name>/SKILL.md。
+  namespace 唯一登记点（skills.<name>.namespace）；目录名无前缀约束：
+    - template → tripod 模板维护，tripod sync 覆写；trust 硬约定 official（不入库，audit 推导）
+    - vendor   → 第三方开源，sync 不动；trust 显式写（official / community / experimental）+ <dir>/source.yaml
+    - custom   → 业务自定义，sync 不动；trust 硬约定 experimental（不入库，audit 推导）
+  revision / updated-on 从 git log 派生（不入库，零手工维护）。
+  category 字段决定 recipe 裁剪：
+    global / server / web / nextjs / mobile / cli / shared / cross-stack
+
+skills:
+  spec-driven-testing:
+    namespace: template
+    category: global
+    version: 1.0.0
+    addedAt: 2026-04-22
+    lastReviewedAt: 2026-04-23
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  graph-code-analysis:
+    namespace: template
+    category: global
+    version: 1.0.0
+    addedAt: 2026-04-22
+    lastReviewedAt: 2026-04-23
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  dev-startup:
+    namespace: template
+    category: global
+    version: 0.1.0
+    addedAt: 2026-04-23
+    lastReviewedAt: 2026-04-23
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  skill-manager:
+    namespace: template
+    category: global
+    version: 0.1.0
+    addedAt: 2026-04-23
+    lastReviewedAt: 2026-04-23
+    lastActivatedAt: null
+    deprecatedAt: null
+
+  adapter-author:
+    namespace: template
+    category: cross-stack
+    version: 0.1.0
+    addedAt: 2026-04-23
+    lastReviewedAt: 2026-04-23
+    lastActivatedAt: null
+    deprecatedAt: null

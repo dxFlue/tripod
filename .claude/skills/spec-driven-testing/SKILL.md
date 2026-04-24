@@ -3,6 +3,8 @@ name: spec-driven-testing
 description: |
   Spec 驱动的三轨 TDD 工作流。引导用户编写功能需求 Spec（纯需求文档，不涉及 API/数据模型等技术细节），交叉审查所有 Spec 的重合/冲突/依赖关系，然后三路并行生成测试计划（用户手动 edge case + /graph-code-analysis 代码扫描 + Spec 推导 ~40 个用例），最终输出三层测试代码：单元测试 + Playwright API E2E + Playwright UI E2E。支持无代码的 greenfield 项目，单元测试框架可自动初始化。
   当用户提到需求规格、功能描述、测试计划、TDD、写 spec、edge case、测试生成、测试用例设计、三轨测试、单元测试、UI 测试时使用。即使用户只说"帮我写这个功能的需求"或"帮我设计测试用例"，也应该触发此 skill。
+when_to_use: 用户说"写 spec / 写需求 / 设计测试用例 / 测试计划 / 新增业务模块 / TDD / edge case"等
+priority: high
 allowed-tools: Read Grep Glob Bash Agent Edit Write
 argument-hint: [module-name | "review" | "generate module-name" | "implement module-name [unit|api|ui]"]
 ---

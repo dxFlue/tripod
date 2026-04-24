@@ -80,13 +80,13 @@
 ### 通知（shared-notification）
 
 - M2 adapter 只 **email-smtp + realtime-sse** 两个
-- **不预登记** SMS / 推送 / 企业微信 / 钉钉 / 飞书 / webhook 各类 adapter
+- **不预登记** SMS（Twilio / AWS SNS）/ Push（FCM / APNs / OneSignal）/ Slack / Discord / Microsoft Teams / LINE Notify / webhook 各类 adapter（中国次级：企微 / 钉钉 / 飞书）
 - **不做** 批量合并（Debounce）/ 速率控制 / quiet hours / 紧急通道多渠道回退（接口预留但 M2 不实现）
 
 ### 鉴权（shared-auth）
 
 - M2 adapter 装 **auth-email-password + auth-username-password + auth-email-otp + auth-magic-link + recovery-email-link** 共 5 个（业务按 `tripod.config.yaml` 的 `auth.credential` 数组自由组合启用）
-- **不预登记** SMS / OAuth / WeChat / WeCom / DingTalk / SSO / MFA 各类 adapter
+- **不预登记** OAuth（Google / Apple / LINE / Microsoft / GitHub / Facebook）/ SMS（Twilio）/ SSO-SAML / SSO-OIDC / passkey / MFA 各类 adapter（中国次级：WeChat / QQ）
 - `MfaChallenger` / `MfaResolver` / `RecoveryProvider` 接口 M2 预留，默认 resolver 始终返回空
 
 ### 通用
@@ -123,25 +123,25 @@ AI 进入 tripod 项目的任何会话，**前三步固定**：
 
 用户自然语言 → AI 执行的确定性命令序列。表中未列的诉求一律先跑步骤 1 的 snapshot，再问用户对齐意图。
 
-| 用户说的话                          | AI 执行的命令                                                                                                                                                                                              | 备注                                             |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| "用 tripod 新建项目" / "开个新项目" | 先问 recipe（默认问纯 ERP / ERP+商城 / 多分公司），再跑 `pnpm create tripod <name> --recipe=<r>`                                                                                                           | 先看 `tripod recipe list`                        |
-| "加个门户 / 官网"                   | `tripod add-app portal`                                                                                                                                                                                    | 自动触发 docker-compose / nginx / CI patch       |
-| "加个商城"                          | `tripod add-app mall-web` + 可选 `mall-mobile`                                                                                                                                                             | 默认两个都装，用户说"只要 web"就单装             |
-| "加个移动管理端 / 现场扫码"         | `tripod add-app admin-mobile`                                                                                                                                                                              |                                                  |
-| "加个超管 / 总部管理 / SaaS 超管"   | `tripod add-app platform` + `tripod platform:seed`                                                                                                                                                         | seed 要用户提供 email                            |
-| "不要审批流 / 不要工作流"           | `tripod remove workflow`                                                                                                                                                                                   | feature 保守 disable，代码保留                   |
-| "换 S3 存储 / OSS / COS"            | `tripod add-adapter storage.backend=s3` + 提示补 env                                                                                                                                                       | 先 `tripod remove-adapter storage.backend=local` |
-| "加微信登录 / OAuth / SMS 登录"     | 新建 `adapters/auth-<provider>/` 包 + `tripod add-adapter auth.credential=<name>`                                                                                                                          | Anti-patterns 说不预登记，所以是新建而非装已有   |
-| "开 MFA / 双因素"                   | `tripod add-adapter mfa.totp=mfa-totp`（新建包） + `tripod platform:enroll-mfa`                                                                                                                            |                                                  |
-| "加 changeset / release 这个改动"   | 读 `docs/release-rules.md` + 跑 `tripod changeset-context` + 写 `.changeset/<two-words>.md` + 告诉用户级别选择理由 + 等确认                                                                                | 永远不自己 commit                                |
-| "发版 / 上线"                       | 走 `infra/deploy/build.sh <version>` 流程，**不要**帮用户跑 —— 提醒用户手动                                                                                                                                | 部署动作用户亲自做                               |
-| "新增订单模块 / 写个订单管理"       | **强制走 §3 完整流程**：`/spec-driven-testing order` 写 spec → `generate order` 出测试计划 → `pnpm tripod gen:crud order` 脚手架 → `/spec-driven-testing implement order` 补三层测试跑绿 → `tripod doctor` | 禁止跳 spec / test；例外见 §3 末尾               |
-| "权限不对 / 某按钮看不到"           | 先 `tripod doctor` + 读用户 JWT claims + grep `*.permissions.ts`                                                                                                                                           | 诊断路径确定                                     |
-| "env 缺 / 配置不对"                 | 跑 `tripod env:validate secrets/.env.prod` + `tripod env:doctor`                                                                                                                                           | 给出缺失清单                                     |
-| "升级状态机 / 加新状态"             | 改 `<resource>.manifest.ts`（见 §6）+ 改 service 方法 + 加 migration                                                                                                                                       | manifest 先改                                    |
-| "加个定时任务"                      | 用 `@Scheduled` 装饰器，不要直接 new Cron                                                                                                                                                                  |                                                  |
-| "观察栈 / 监控接起来"               | 参考 `未来升级路径`（观察性章节），不要在 M2 阶段主动加                                                                                                                                                    |                                                  |
+| 用户说的话                            | AI 执行的命令                                                                                                                                                                                              | 备注                                                                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| "用 tripod 新建项目" / "开个新项目"   | 先问 recipe（默认问纯 ERP / ERP+商城 / 多分公司），再跑 `pnpm create tripod <name> --recipe=<r>`                                                                                                           | 先看 `tripod recipe list`                                                  |
+| "加个门户 / 官网"                     | `tripod add-app portal`                                                                                                                                                                                    | 自动触发 docker-compose / nginx / CI patch                                 |
+| "加个商城"                            | `tripod add-app mall-web` + 可选 `mall-mobile`                                                                                                                                                             | 默认两个都装，用户说"只要 web"就单装                                       |
+| "加个移动管理端 / 现场扫码"           | `tripod add-app admin-mobile`                                                                                                                                                                              |                                                                            |
+| "加个超管 / 总部管理 / SaaS 超管"     | `tripod add-app platform` + `tripod platform:seed`                                                                                                                                                         | seed 要用户提供 email                                                      |
+| "不要审批流 / 不要工作流"             | `tripod remove workflow`                                                                                                                                                                                   | feature 保守 disable，代码保留                                             |
+| "换 S3 存储 / OSS / COS"              | `tripod add-adapter storage.backend=s3` + 提示补 env                                                                                                                                                       | 先 `tripod remove-adapter storage.backend=local`                           |
+| "加 Google / Apple / LINE / SMS 登录" | 新建 `adapters/auth-<provider>/` 包 + `tripod add-adapter auth.credential=<name>`                                                                                                                          | Anti-patterns 说不预登记，所以是新建而非装已有；走 `/adapter-author` skill |
+| "开 MFA / 双因素"                     | `tripod add-adapter mfa.totp=mfa-totp`（新建包） + `tripod platform:enroll-mfa`                                                                                                                            |                                                                            |
+| "加 changeset / release 这个改动"     | 读 `docs/release-rules.md` + 跑 `tripod changeset-context` + 写 `.changeset/<two-words>.md` + 告诉用户级别选择理由 + 等确认                                                                                | 永远不自己 commit                                                          |
+| "发版 / 上线"                         | 走 `infra/deploy/build.sh <version>` 流程，**不要**帮用户跑 —— 提醒用户手动                                                                                                                                | 部署动作用户亲自做                                                         |
+| "新增订单模块 / 写个订单管理"         | **强制走 §3 完整流程**：`/spec-driven-testing order` 写 spec → `generate order` 出测试计划 → `pnpm tripod gen:crud order` 脚手架 → `/spec-driven-testing implement order` 补三层测试跑绿 → `tripod doctor` | 禁止跳 spec / test；例外见 §3 末尾                                         |
+| "权限不对 / 某按钮看不到"             | 先 `tripod doctor` + 读用户 JWT claims + grep `*.permissions.ts`                                                                                                                                           | 诊断路径确定                                                               |
+| "env 缺 / 配置不对"                   | 跑 `tripod env:validate secrets/.env.prod` + `tripod env:doctor`                                                                                                                                           | 给出缺失清单                                                               |
+| "升级状态机 / 加新状态"               | 改 `<resource>.manifest.ts`（见 §6）+ 改 service 方法 + 加 migration                                                                                                                                       | manifest 先改                                                              |
+| "加个定时任务"                        | 用 `@Scheduled` 装饰器，不要直接 new Cron                                                                                                                                                                  |                                                                            |
+| "观察栈 / 监控接起来"                 | 参考 `未来升级路径`（观察性章节），不要在 M2 阶段主动加                                                                                                                                                    |                                                                            |
 
 ### 3. 新增业务模块完整流程（Spec → 脚手架 → 测试，强制顺序）
 
@@ -507,28 +507,28 @@ UI 组件库不完全是固化（业务可换），也不是标准 adapter（没
 
 #### Adapter 项（接口稳定，换实现 = 零业务代码改动）
 
-| 能力                | 接口                          | M2 ★                                                                                    | Tier 2 ☆                                                                                         |
-| ------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| 凭证登录            | `CredentialProvider`          | auth-email-password / auth-username-password / **auth-email-otp** / **auth-magic-link** | oauth-google / oauth-wechat / sms / SSO                                                          |
-| Session 策略        | `SessionPolicy`               | MaxDevicesPolicy / SingleGlobalPolicy                                                   | PerAppPolicy                                                                                     |
-| 密码恢复            | `RecoveryProvider`            | recovery-email-link                                                                     | recovery-sms / recovery-security-question                                                        |
-| MFA                 | `MfaProvider`                 | （接口留，实现 M6）                                                                     | mfa-totp / mfa-webauthn                                                                          |
-| 存储                | `StorageProvider`             | storage-local                                                                           | storage-s3 / storage-oss / storage-cos / storage-minio                                           |
-| 通知通道            | `ChannelProvider`             | channel-email-smtp / channel-realtime-sse                                               | channel-sms / channel-push / channel-wecom / channel-dingtalk / channel-feishu / channel-webhook |
-| 实时通道            | `RealtimeChannel`             | realtime-sse                                                                            | realtime-websocket / realtime-mqtt                                                               |
-| 错误上报            | `ErrorReporter`               | glitchtip（Sentry SDK）                                                                 | sentry-saas                                                                                      |
-| i18n 后端           | `I18nBackend`                 | i18n-file                                                                               | tolgee / crowdin / lokalise                                                                      |
-| 审计后端            | `AuditBackend`                | audit-postgres                                                                          | audit-clickhouse / audit-es                                                                      |
-| 缓存                | `CacheProvider`               | cache-redis                                                                             | cache-in-memory / cache-memcached                                                                |
-| 前端埋点            | `AnalyticsProvider`           | analytics-null                                                                          | posthog / mixpanel / ga / segment                                                                |
-| Feature flag        | `FeatureFlagProvider`         | flag-local                                                                              | flag-unleash / flag-launchdarkly                                                                 |
-| **Mobile Push**     | `PushProvider`（M2 接口）     | （M5 实现 fcm / apns）                                                                  | 极光 / 个推 / 统一推送联盟                                                                       |
-| **Mobile DeepLink** | `DeepLinkResolver`（M2 接口） | （M5 实现 expo-linking）                                                                | universal-link / app-link / 自定义 scheme                                                        |
-| Secrets 管理        | `SecretsProvider`             | local-dotenv                                                                            | sops / vault / doppler / aws-secrets-manager                                                     |
-| **支付**（mall）    | `PaymentProvider`             | **payment-mock**                                                                        | stripe / alipay / wechat-pay                                                                     |
-| **物流**（mall）    | `ShippingProvider`            | **shipping-mock**                                                                       | sf / zto / yt / shippo                                                                           |
-| **搜索**（mall）    | `SearchProvider`              | pg-fulltext（内置）                                                                     | meilisearch / elasticsearch / algolia                                                            |
-| K8s 部署            | -                             | docker-compose                                                                          | k8s-helm-chart                                                                                   |
+| 能力                | 接口                          | M2 ★                                                                                    | Tier 2 ☆                                                                                                                                                                                                         |
+| ------------------- | ----------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 凭证登录            | `CredentialProvider`          | auth-email-password / auth-username-password / **auth-email-otp** / **auth-magic-link** | oauth-google / oauth-wechat / sms / SSO                                                                                                                                                                          |
+| Session 策略        | `SessionPolicy`               | MaxDevicesPolicy / SingleGlobalPolicy                                                   | PerAppPolicy                                                                                                                                                                                                     |
+| 密码恢复            | `RecoveryProvider`            | recovery-email-link                                                                     | recovery-sms / recovery-security-question                                                                                                                                                                        |
+| MFA                 | `MfaProvider`                 | （接口留，实现 M6）                                                                     | mfa-totp / mfa-webauthn                                                                                                                                                                                          |
+| 存储                | `StorageProvider`             | storage-local                                                                           | storage-s3 / storage-oss / storage-cos / storage-minio                                                                                                                                                           |
+| 通知通道            | `ChannelProvider`             | channel-email-smtp / channel-realtime-sse                                               | channel-sms（Twilio / AWS SNS）/ channel-push / channel-slack / channel-discord / channel-microsoft-teams / channel-line-notify / channel-webhook（中国次级：channel-wecom / channel-dingtalk / channel-feishu） |
+| 实时通道            | `RealtimeChannel`             | realtime-sse                                                                            | realtime-websocket / realtime-mqtt                                                                                                                                                                               |
+| 错误上报            | `ErrorReporter`               | glitchtip（Sentry SDK）                                                                 | sentry-saas                                                                                                                                                                                                      |
+| i18n 后端           | `I18nBackend`                 | i18n-file                                                                               | tolgee / crowdin / lokalise                                                                                                                                                                                      |
+| 审计后端            | `AuditBackend`                | audit-postgres                                                                          | audit-clickhouse / audit-es                                                                                                                                                                                      |
+| 缓存                | `CacheProvider`               | cache-redis                                                                             | cache-in-memory / cache-memcached                                                                                                                                                                                |
+| 前端埋点            | `AnalyticsProvider`           | analytics-null                                                                          | posthog / mixpanel / ga / segment                                                                                                                                                                                |
+| Feature flag        | `FeatureFlagProvider`         | flag-local                                                                              | flag-unleash / flag-launchdarkly                                                                                                                                                                                 |
+| **Mobile Push**     | `PushProvider`（M2 接口）     | （M5 实现 fcm / apns）                                                                  | fcm（Android / 跨平台）/ apns（iOS 原生）/ expo-push / onesignal / airship（中国次级：jiguang / getui / unified-push）                                                                                           |
+| **Mobile DeepLink** | `DeepLinkResolver`（M2 接口） | （M5 实现 expo-linking）                                                                | universal-link / app-link / 自定义 scheme                                                                                                                                                                        |
+| Secrets 管理        | `SecretsProvider`             | local-dotenv                                                                            | sops / vault / doppler / aws-secrets-manager                                                                                                                                                                     |
+| **支付**（mall）    | `PaymentProvider`             | **payment-mock**                                                                        | stripe / alipay / wechat-pay                                                                                                                                                                                     |
+| **物流**（mall）    | `ShippingProvider`            | **shipping-mock**                                                                       | sf / zto / yt / shippo                                                                                                                                                                                           |
+| **搜索**（mall）    | `SearchProvider`              | pg-fulltext（内置）                                                                     | meilisearch / elasticsearch / algolia                                                                                                                                                                            |
+| K8s 部署            | -                             | docker-compose                                                                          | k8s-helm-chart                                                                                                                                                                                                   |
 
 **判据**：能通过一致接口替换的、有明确 SaaS / 云服务候选的、"换一家供应商"是常见需求的 → 留 adapter。基础设施层选型（DB / 队列 / 框架）不在此列。
 
@@ -583,13 +583,13 @@ analytics-null / flag-local / secrets-local-dotenv / push-null
 
 下列 adapter 的**接口**在 tripod 里（接口稳定，便于项目组接入），但**具体接哪家 SaaS 是业务项目决定**，不是 tripod 要自托管的东西：
 
-| 类别                                                         | 典型场景                | 说明                                                                                                        |
-| ------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
-| 商业支付（Stripe / 支付宝 / 微信支付）                       | B2C 商城                | B2B ERP 不需要；真要接属业务对接第三方，不是 tripod 基建                                                    |
-| OAuth 第三方登录（Google / GitHub / 微信 / 企业微信 / 钉钉） | 社交登录 / 企业 SSO     | 依赖外部 IdP；tripod 提供 `CredentialProvider` 接口，默认只给 email-password                                |
-| 短信 SMS（阿里云 / 腾讯云 / Twilio）                         | 验证码 / 营销           | 运营商通道，无自托管方案；tripod 提供 `ChannelProvider.sms` 接口                                            |
-| Mobile 推送（FCM / APNs / 极光 / 统一推送联盟）              | iOS / Android 通知      | **Apple / Google 操作系统级政策，任何框架都不可自托管**；tripod 提供 `PushProvider` 接口，M2 默认 push-null |
-| Mobile 打包签名 / 商店发布                                   | App Store / Google Play | Apple / Google 强制，不是 tripod 可解决的层级；EAS 免费 / 自备 macOS + Fastlane                             |
+| 类别                                                                                  | 典型场景                | 说明                                                                                                        |
+| ------------------------------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 商业支付（美国：Stripe / PayPal / Square；日本：Komoju / Pay.jp / LINE Pay / PayPay） | B2C 商城                | B2B ERP 不需要；真要接属业务对接第三方，不是 tripod 基建                                                    |
+| OAuth 第三方登录（Google / Apple / LINE / Microsoft / GitHub / Facebook）             | 社交登录 / 企业 SSO     | 依赖外部 IdP；tripod 提供 `CredentialProvider` 接口，默认只给 email-password                                |
+| 短信 SMS（Twilio / AWS SNS / LINE）                                                   | 验证码 / 营销           | 运营商通道，无自托管方案；tripod 提供 `ChannelProvider.sms` 接口                                            |
+| Mobile 推送（FCM / APNs / Expo Push / OneSignal）                                     | iOS / Android 通知      | **Apple / Google 操作系统级政策，任何框架都不可自托管**；tripod 提供 `PushProvider` 接口，M2 默认 push-null |
+| Mobile 打包签名 / 商店发布                                                            | App Store / Google Play | Apple / Google 强制，不是 tripod 可解决的层级；EAS 免费 / 自备 macOS + Fastlane                             |
 
 **关键判据**：tripod 提供接口稳定 → 业务项目需要时 `tripod add-adapter <slot>=<impl>` 按需接 → 具体外部依赖是业务选择。
 
@@ -2105,7 +2105,10 @@ model UserDevice {
 adapters/push-null/         ★ M2 默认（no-op；M2 通知走 email + SSE 够用）
 adapters/push-fcm/          ☆ M5（Google Firebase Cloud Messaging — 安卓 + iOS 通用）
 adapters/push-apns/         ☆ M5（Apple Push Notification — iOS 直连）
-adapters/push-jiguang/      ☆ Tier 2（国内 Android 厂商聚合：小米/华为/OPPO/VIVO/魅族）
+adapters/push-expo/         ☆ Tier 2（Expo managed workflow 推荐，简化 FCM+APNs）
+adapters/push-onesignal/    ☆ Tier 2（聚合服务，跨平台一键发推）
+adapters/push-airship/      ☆ Tier 2（企业级聚合）
+# 中国次级：adapters/push-jiguang/（极光）/ push-getui/ / push-unified-push/
 adapters/push-getui/        ☆ Tier 2
 adapters/push-unified/      ☆ Tier 2（统一推送联盟标准，各厂商 ROM 原生支持）
 ```
@@ -2810,7 +2813,7 @@ adapters/
 └── realtime-sse/                   ★ M2（默认）
 ```
 
-短信 / 推送 / 企微 / 钉钉 / 飞书 / webhook / WebSocket 等**不预登记**。`ChannelProvider` + `RealtimeChannel` 接口 M2 就绪，扩展新增一个 adapter 包即可。
+SMS（Twilio / AWS SNS）/ Push / Slack / Discord / Microsoft Teams / LINE Notify / webhook / WebSocket 等**不预登记**（中国次级：企微 / 钉钉 / 飞书）。`ChannelProvider` + `RealtimeChannel` 接口 M2 就绪，扩展新增一个 adapter 包即可，走 `/adapter-author` skill。
 
 ### shared-notification / shared-realtime 包结构
 
@@ -2838,14 +2841,14 @@ packages/shared-realtime/
 ### 里程碑
 
 - **M2**：shared-notification + shared-realtime(SSE) + in-app + email-smtp
-- **M3+**：按项目需求接入 SMS / 推送 / 企业微信 / 钉钉等 adapter
+- **M3+**：按项目需求接入 SMS（Twilio）/ Push / Slack / Discord / LINE Notify 等 adapter
 - **M6**：模板管理后台 UI、送达率 dashboard
 
 ### AI 读解路径（通知）
 
 - **加通知类型**：`pnpm tripod gen:notification-type <typeId>` 生成 `<resource>.notification-types.ts` + `templates/<typeId>.hbs`；同步更新 `<resource>.manifest.ts` 的 `notifications` 字段
 - **业务触发**：service 层调 `this.notifier.notify({ tenantId, userId, typeId, data })`，不直接选渠道
-- **加渠道**（邮件 / 短信 / 推送 / 企微 / 钉钉 / 飞书 / webhook）：新建 `adapters/notification-<channel>/`（**不预登记**）+ 实现 `ChannelProvider` + `tripod add-adapter notification.<slot>=<name>`
+- **加渠道**（邮件 / 短信 / 推送 / Slack / Discord / Teams / LINE Notify / webhook）：新建 `adapters/notification-<channel>/`（**不预登记**）+ 实现 `ChannelProvider` + `tripod add-adapter notification.<slot>=<name>`（走 `/adapter-author` skill）
 - **实时推送**：走 `shared-realtime`，三个固定频道 `user:{id}:notifications` / `user:{id}:auth-events` / `tenant:{id}:broadcast`，AI 订阅 / 推送都走这三个，不自定义
 
 **AI 禁止**（见 Anti-patterns）：
@@ -5755,20 +5758,28 @@ pnpm turbo run lint typecheck --filter=[HEAD]
 
 本工作流由 Claude Code skills 驱动，随模板分发：
 
-| Skill                 | 职责                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `spec-driven-testing` | 写 spec → 跨 spec 审查 → 生成测试计划（三轨）→ 生成三层测试代码                             |
-| `graph-code-analysis` | `spec-driven-testing` 的 Track B 依赖，图论扫描已有代码找测试盲区                           |
-| `dev-startup`         | 一键起全栈 + 常见问题排查引导                                                               |
-| `swap-ui-library`     | ⭐ AI 换 UI 库：web（AntD ↔ shadcn ↔ MUI ↔ Arco）+ mobile（Gluestack ↔ Tamagui ↔ RN Paper） |
+| Skill                 | 职责                                                                                                           |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `spec-driven-testing` | 写 spec → 跨 spec 审查 → 生成测试计划（三轨）→ 生成三层测试代码                                                |
+| `graph-code-analysis` | `spec-driven-testing` 的 Track B 依赖，图论扫描已有代码找测试盲区                                              |
+| `dev-startup`         | 一键起全栈 + 常见问题排查引导                                                                                  |
+| `skill-manager`       | ⭐ Skill 生命周期管理：加 / 改 / 删 / audit / 决策树（哪个目录、哪个 namespace）                               |
+| `adapter-author`      | ⭐ 新建 adapter 包引导：18 接口白名单 + 7 步流程（意图识别→骨架→实现→测试→注册→doctor）+ Stripe worked example |
+| ~~`swap-ui-library`~~ | ⚠️ M2 暂不交付（详见 §swap-ui-library skill 详细设计 头部标注）                                                |
 
 ### Skill 分发机制
+
+**关键约束**：Claude Code 不递归扫描 `.claude/skills/`，只识别 `.claude/skills/<name>/SKILL.md` 一层。所有 skill 必须**扁平**，**namespace / category / trust 以 `manifest.yaml` 为唯一 source of truth**，目录名无命名前缀约束。
 
 ```
 templates/                         ← @tripod-stack/templates 包根
 ├── .claude/
 │   └── skills/
-│       ├── spec-driven-testing/
+│       ├── manifest.yaml          # ⭐ namespace 唯一登记点 + 时间戳真相源（addedAt / lastReviewedAt / lastActivatedAt / deprecatedAt）+ trust（仅 vendor 必填）
+│       ├── skill-rules.json       # ⭐ skill-activation-prompt hook 触发词表
+│       ├── README.md              # ⭐ namespace 推导规则 + 加 skill 指南入口
+│       │
+│       ├── spec-driven-testing/   # namespace: template（无前缀 ≠ 判定依据，以 manifest 为准）
 │       │   ├── SKILL.md
 │       │   └── rules/
 │       │       ├── spec-template.md
@@ -5782,28 +5793,67 @@ templates/                         ← @tripod-stack/templates 包根
 │       ├── dev-startup/
 │       │   ├── SKILL.md
 │       │   └── troubleshoot.md
-│       └── swap-ui-library/                    ⭐ 新增
-│           ├── SKILL.md                        # 换库流程（扫 -> 映射 -> 替换 -> smoke）
-│           └── mappings/
-│               ├── web/
-│               │   ├── antd-to-shadcn.md       # 组件映射表 + props 差异
-│               │   ├── antd-to-mui.md
-│               │   ├── antd-to-arco.md
-│               │   ├── shadcn-to-antd.md
-│               │   └── shadcn-to-mui.md
-│               └── mobile/
-│                   ├── gluestack-to-tamagui.md
-│                   ├── gluestack-to-paper.md
-│                   └── tamagui-to-gluestack.md
+│       ├── skill-manager/         # ⭐ 新增（M2）：skill 生命周期管理
+│       │   └── SKILL.md
+│       └── adapter-author/        # ⭐ 新增（M2）：引导新建 adapter 包（18 接口 + 7 步流程）
+│           ├── SKILL.md
+│           └── rules/             # intent-check / package-skeleton / interface-guide / register-and-test / worked-example-stripe
+│       # swap-ui-library/        # ⚠️ M2 暂不交付，详见 §swap-ui-library skill 详细设计 头部标注
+│
+│       └── (业务安装后，目录名自由)
+│           ├── code-reviewer/              # manifest: namespace=vendor, trust=community
+│           │   ├── SKILL.md
+│           │   └── source.yaml              # 上游来源 + ref + license + checksum + trust
+│           └── my-business-flow/            # manifest: namespace=custom（trust 硬约定 experimental，不入库）
+│               └── SKILL.md
 └── apps/ ...
 ```
 
-- `pnpm create tripod <name>` 运行时：**把模板根的 `.claude/` 整块原样复制到新项目根**（与 `apps/` / `packages/` 同级），**不经过 patch 引擎**（因为 skill 是 AI 协议，不是业务代码）
+**namespace 推导规则**（零手工维护 + 零冗余）：
+
+| 信息         | source of truth                                                                                                                            | 如何获取                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| `namespace`  | `manifest.yaml.skills.<name>.namespace`                                                                                                    | 读 manifest（唯一真源；目录名无命名前缀约束） |
+| `trust`      | `template` → 硬约定 `official`（不入库）<br>`vendor` → `manifest.yaml` + `<dir>/source.yaml`<br>`custom` → 硬约定 `experimental`（不入库） | audit 时按 namespace 分发推导                 |
+| `revision`   | template/custom：`git log --oneline <dir> \| wc -l`<br>vendor：`source.yaml.ref`                                                           | 不入库，audit 展示时派生                      |
+| `updated-on` | template/custom：`git log -1 --format=%cs <dir>`<br>vendor：`source.yaml.installedAt`                                                      | 不入库，audit 展示时派生                      |
+
+**为什么去掉目录前缀约束**：改目录名代价高（`git mv` + 更新所有引用），改 manifest 字段代价低（一行）；用户意外 copy 不会因"忘改前缀"误判，`skill:audit --auto` 保守登记为 custom+experimental，用户一条 `skill:relabel` 修正到 vendor+community。
+
+**`manifest.yaml` schema**（每条 skill）：`namespace` / `trust`（仅 vendor 必填）/ `category` / `version` / `addedAt` / `lastReviewedAt` / `lastActivatedAt` / `deprecatedAt`；vendor 额外独立 `<dir>/source.yaml` 存 `source` / `ref` / `installedAt` / `trust` / `license` / `checksum`。
+
+**category 取值**：`global` / `server` / `web` / `nextjs` / `mobile` / `cli` / `shared` / `cross-stack`。`pnpm create tripod` 按 recipe 选定的 app 类型，按 `manifest.yaml.skills.<name>.category` 字段裁剪要拷贝的 skill。
+
+**配套 hook + CLI**：
+
+| 组件                              | 类型                               | 职责                                                                                         |
+| --------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| `skill-activation-prompt`         | UserPromptSubmit hook              | 按 `skill-rules.json` 关键词 / 意图正则提示激活                                              |
+| `skill-usage-tracker`             | PostToolUse hook (matcher=`Skill`) | 监听 Skill 工具调用 → touch `lastActivatedAt`                                                |
+| `tripod skill:new <name>`         | CLI 命令                           | 建 custom skill 目录 + 登记 manifest（namespace=custom）                                     |
+| `tripod skill:install <url>`      | CLI 命令                           | 装 vendor skill（下载 + source.yaml + 登记 manifest，交互式询问 trust）                      |
+| `tripod skill:relabel <name>`     | CLI 命令                           | 修 orphan 身份（从 custom+experimental 改为 vendor+community 等）                            |
+| `tripod skill:upgrade <name>`     | CLI 命令                           | 升级 vendor skill                                                                            |
+| `tripod skill:uninstall <name>`   | CLI 命令                           | 卸载 skill（删目录 + manifest / skill-rules 条目）                                           |
+| `tripod skill:audit --auto`       | pre-commit hook (lint-staged)      | 检测孤儿 skill / 缺失 source.yaml，**保守登记为 custom+experimental** + 提示 `skill:relabel` |
+| `tripod skill:audit`              | CLI 命令                           | 静态扫描超期 / 重叠 / deprecated / 与 template 撞名                                          |
+| `tripod skill:audit --fix <name>` | CLI 命令                           | 交互式修复某个 skill                                                                         |
+
+**分发与同步**：
+
+- `pnpm create tripod <name>` 运行时：**按 recipe 裁剪 template skill 子集**（按 `category` 过滤），把 `.claude/skills/` 拷到新项目根（与 `apps/` / `packages/` 同级），**不经过 patch 引擎**
 - `tripod.manifest.yaml` 不声明 skill slot，skill 不走 feature / adapter 配置体系
-- 新项目 clone 后 Claude Code 扫描 `.claude/skills/`，所有 skill 即时可用（`/spec-driven-testing` / `/graph-code-analysis` / `/dev-startup` / `/swap-ui-library`）
-- Skill 在 tripod 模板仓库内维护，升级跟 `@tripod-stack/templates` 版本。已下发项目想同步最新 skill：Tier 2 的 `tripod sync --skills-only` 拉最新 `.claude/skills/` 回来（用户手动触发，不自动）
+- 新项目 clone 后 Claude Code 扫描 `.claude/skills/`，所有 skill 即时可用
+- `tripod sync --skills-only`（Tier 2）拉最新模板 skill 回流，**只覆写 `namespace: template` 的条目**（从 manifest 读判定，不依赖目录名）+ `manifest.yaml` 对应段；vendor / custom 永不动
+- 业务团队加 skill 走 `skill-manager` skill 引导（决策树 + 走 CLI 自动登记 + 填 manifest）
 
 ### `swap-ui-library` skill 详细设计
+
+> ⚠️ **M2 暂不交付**。换 UI 库为低频操作（业务一旦定 UI 库通常不换），预先写完整 8 个 mapping 文件 ROI 极低。本节设计保留以备未来业务真有换库需求时按此快速启动。
+>
+> **现状**：`.claude/skills/swap-ui-library/` 在 M2 不存在；plan 其他位置（命令映射表 §5 543 行 / §11 中间类 UI 库表 / 模板配对文档 components.md 等）中"跑 `/swap-ui-library` skill" 的引用在本 skill 实际落地前不可用，遇到时按手工换库或停下问用户。
+>
+> **激活条件**：业务真要换 UI 库时，先讨论方案（要不要做 skill / 做哪些 mapping / 工作量评估），再按本节设计落地。
 
 **触发场景**：用户说"把 admin-web 的 UI 从 AntD 换成 shadcn"、"mall-mobile 不想用 Gluestack 换成 Tamagui"等。
 
@@ -6678,7 +6728,7 @@ Tripod **不做 CI 驱动的 PR 门槛**，合入检查靠本地 hook：
 **错误码 / i18n**
 
 - [ ] 新增 `BusinessException` 都用登记的 errorCode 常量（非字符串）
-- [ ] 新增 errorCode 4 语言翻译齐全（zh-CN / en-US / zh-TW / ja-JP）
+- [ ] 新增 errorCode 4 语言翻译齐全（en-US / ja-JP / zh-CN / zh-TW）
 - [ ] 错误码 HTTP status 映射匹配 core §4.3.2
 
 **幂等 / 关键操作**
@@ -8138,53 +8188,52 @@ services:
 - `pnpm dev` = minimal profile（pg + redis）
 - `pnpm dev --profile=full` = all（+ mailhog + minio + glitchtip，测通知/存储/错误上报走真实链路）
 
+**`tripod dev` 默认排除 mobile apps**（admin-mobile / mall-mobile）— mobile 启动 / 调试 / 发版由业务团队手动管理（`pnpm --filter <mobile-app> start` + EAS / prebuild / fastlane 三选一）。turbo 命令带 `--filter='!./apps/admin-mobile' --filter='!./apps/mall-mobile'`。
+
+**实现：tee log 跨平台**：`pnpm tripod dev` 内部用 Node `child_process.spawn` + `fs.createWriteStream` 实现，stdout/stderr 同时转发到用户 terminal 和 `.tripod/logs/dev.latest.log`；session 退出时 rename 到 `.tripod/logs/dev-<timestamp>.log` 归档。`.tripod/logs/` 加 .gitignore。**不依赖 shell `tee`**（Windows PowerShell 不兼容）。
+
 ### `.claude/skills/dev-startup` skill
+
+实际文件已交付（M2）：
 
 ```
 .claude/skills/dev-startup/
-├── SKILL.md                       # AI 如何引导用户起环境
-└── troubleshoot.md                # 常见问题排查（端口冲突、证书失效等）
+├── SKILL.md                       # 诊断 5 步 + AI 行为铁律 + Mobile 速查
+└── troubleshoot.md                # 5 类症状表（端口 / 依赖容器 / DB / 系统资源 / 多 app 定位）
 ```
 
-SKILL.md 简化内容：
+**核心约束**：
 
-```
-当用户说"起项目 / 跑不起来 / dev 挂了"时：
-1. 先确认是否跑过 pnpm install
-2. 跑 tripod doctor 看 hot-spot / env / migration 是否 ok
-3. 检查 docker ps 看依赖是否健康
-4. 看 terminal 里 pnpm dev 最后几行错误
-5. 对照 troubleshoot.md 的症状表
-
-troubleshoot.md 症状表：
-| 症状 | 原因 | 修复 |
-| "EADDRINUSE :3000" | 上次进程没关 | lsof -i:3000 + kill |
-| DB 连不上 | postgres 容器没起 | docker compose up -d postgres |
-| Prisma "Drift detected" | dev 和 migration 不同步 | prisma migrate reset（dev 才可以！）|
-| Redis 连不上 | redis 容器没起 | docker compose up -d redis |
-```
+- 诊断流程 5 步（按顺序）：`pnpm install` → `secrets/.env` → `tripod doctor` → `docker ps` → 读 `.tripod/logs/dev.latest.log` → 对照 troubleshoot.md
+- **读 dev log**：优先读 `.tripod/logs/dev.latest.log`（`pnpm tripod dev` 自动 tee 写入），缺失则让用户复制 terminal 粘贴；**不假定 Claude 能看用户 terminal**（实际看不到）
+- **端口冲突**：用 `pnpm tripod port:check <port>`（M2 抹平 lsof / netstat 跨平台），让用户决定 kill；**AI 不主动 kill**
+- **HTTPS / mkcert / OAuth**：tripod 不管，提示用户自配 mkcert + 反代
+- **Mobile**（admin-mobile / mall-mobile）：不进诊断流程，只给"启动命令 + 文档链接"，发版三路线（EAS / 本地 prebuild / fastlane）由业务自选
 
 ### CLI 命令补充
 
 新增：
 
 ```
-pnpm tripod dev                         # M2：一条命令起全栈
-pnpm tripod dev --fresh                 # M2：重置 DB + reseed demo
-pnpm tripod dev --profile=minimal|full  # M2：profile 选择（min=pg+redis / full=+mailhog+minio+glitchtip）
-pnpm tripod demo:reset                  # M2：只重置 demo 数据，不碰 schema
+pnpm tripod dev                                # M2：一条命令起全栈（自动 tee log，排除 mobile）
+pnpm tripod dev --fresh                        # M2：重置 DB + reseed demo
+pnpm tripod dev --profile=minimal|full         # M2：profile 选择（min=pg+redis / full=+mailhog+minio+glitchtip）
+pnpm tripod demo:reset                         # M2：只重置 demo 数据，不碰 schema
+pnpm tripod port:check <port>                  # M2：跨平台查端口占用（抹平 lsof / netstat），AI 不主动 kill
+pnpm tripod skill:audit [--auto|--fix <name>]  # M2：skill 系统审计（孤儿 / 超期 / 重叠 / 命名违规），--auto 用于 pre-commit 自动登记
 ```
 
 ### 里程碑
 
-- **M2**：tripod dev 实现 + mailhog/minio/glitchtip compose + demo seed + dev-startup skill
-- **M3+**：macOS/Win/Linux 跨平台边界 case 打磨
+- **M2**：tripod dev 实现 + mailhog/minio/glitchtip compose + demo seed + dev-startup skill + CLI 跨平台基线（`port:check` / `dev` Node tee log）+ skill 系统骨架（`manifest.yaml` / `skill-rules.json` / `skill:audit`）
+- **M3+**：macOS/Win/Linux 跨平台边界 case 打磨（mobile 模拟器 / 不同 docker 镜像 platform 等）
 
 ### AI 读解路径（dev 启动）
 
-- 用户说"跑不起来"：先 `tripod doctor` + `docker ps` + 看最新 `pnpm dev` 错误；对照 dev-startup skill troubleshoot
-- 用户说"端口冲突"：`lsof -i:<port>` 查占用，不主动 kill，提示用户
+- 用户说"跑不起来"：先 `tripod doctor` + `docker ps` + 读 `.tripod/logs/dev.latest.log`（缺失就让用户粘贴 terminal）；对照 dev-startup skill troubleshoot
+- 用户说"端口冲突"：`pnpm tripod port:check <port>` 查占用（跨平台），不主动 kill，提示用户
 - 用户说"要本地 HTTPS / OAuth 回调"：提示"tripod 不管 HTTPS，你自己配 mkcert + 反代"
+- 用户问 mobile 启动 / 发版：跳 dev-startup skill 的 Mobile 速查段，给命令 + 官方文档链接，**不进诊断流程、不代跑 EAS**
 
 ---
 
@@ -8243,7 +8292,7 @@ pnpm tripod demo:reset                  # M2：只重置 demo 数据，不碰 sc
 | 权限守卫                                                    | 菜单按 PAGE 过滤 / `<Gate>` 按钮 / `<RouteGuard>` / 403 页                                |
 | API client                                                  | axios + 拦截器 + 自动 traceId + 错误码翻译 toast                                          |
 | 错误处理                                                    | 400/401/403/404/5xx 全自动                                                                |
-| 多语言                                                      | 4 语言切换（zh-CN / en-US / zh-TW / ja-JP）                                               |
+| 多语言                                                      | 4 语言切换（**en-US 默认** / ja-JP / zh-CN / zh-TW）                                      |
 | 埋点                                                        | analytics.track 自动 page / click 埋点                                                    |
 | Feature flag                                                | `<Flag>` / `useFeatureFlag`                                                               |
 | 主题                                                        | light / dark 切换 + tenant 色板                                                           |
@@ -8352,7 +8401,7 @@ pnpm tripod demo:reset                  # M2：只重置 demo 数据，不碰 sc
 - **购物车合并**：guest cookie → user 登录后自动合并（shared-cart）
 - **库存预占**：加购不占 / 下单预占 15min / 支付成功锁定 / 超时 CRON 释放
 - **订单状态机**：draft → payment-pending → paid → picking → packed → shipped → delivered → completed（+ cancelled / refund-requested / refunded）
-- **支付 adapter**：PaymentProvider 接口 + `payment-mock` M2 默认 / Stripe / 支付宝 / 微信支付 Tier 2
+- **支付 adapter**：PaymentProvider 接口 + `payment-mock` M2 默认 / 美国 Stripe / PayPal / Square / 日本 Komoju / Pay.jp / LINE Pay / PayPay / Rakuten Pay Tier 2（中国次级：Alipay / WeChat Pay）
 - **搜索**：M2 Postgres 全文检索（≤ 10 万 SKU 够用）；Tier 2 ES / Meilisearch / Algolia
 - **SEO**：Product JSON-LD / sitemap 含所有商品 / canonical URL / 多语言路由
 - **Shopper 鉴权**：同 portal Shopper 体系
@@ -8373,8 +8422,8 @@ pnpm tripod demo:reset                  # M2：只重置 demo 数据，不碰 sc
 **Mall-mobile 特有**：
 
 - **扫码购物**：商品条码 / 二维码 → 深链 → 商品详情
-- **支付 mobile 模式**：M2 默认 WebView + `payment-mock`；Tier 2 Stripe RN SDK / 支付宝 / 微信 SDK
-- **深链分享**：分享商品到微信朋友圈 → Universal Link + App Link → 打开 App 商品详情
+- **支付 mobile 模式**：M2 默认 WebView + `payment-mock`；Tier 2 Stripe RN SDK / PayPal SDK / LINE Pay SDK / PayPay SDK
+- **深链分享**：分享商品到 Twitter / LINE / Facebook → Universal Link + App Link → 打开 App 商品详情
 - **离线**：同 admin-mobile 轻量；下单必须在线
 
 **测试**：同 admin-mobile（Unit + 砍 Detox）。
@@ -8967,8 +9016,9 @@ tripod/
 - 加上已有 `auth-email-password` / `auth-username-password` / `recovery-email-link`，M2 默认装 **5 个 auth adapter**，业务按 `tripod.config.yaml` 任意组合启用
 
 **M2 新增 skill**：
-- `.claude/skills/swap-ui-library/`（AI 换 UI 库，web + mobile 互换 mapping）
+- `.claude/skills/skill-manager/`（skill 生命周期管理：决策树 + 命名约定 + 第三方安装手册）
 - `.claude/skills/dev-startup/`（一键起全栈 + 排查）
+- ~~`.claude/skills/swap-ui-library/`~~（⚠️ M2 暂不交付，详见 §swap-ui-library skill 详细设计 头部标注）
 
 ### M3：完整 UI + Portal + 部分 Mall（业务场景下放）
 
